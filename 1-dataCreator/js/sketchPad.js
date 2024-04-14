@@ -52,7 +52,7 @@ class SketchPad {
         const lastPath = this.paths[this.paths.length - 1];
         lastPath.push(mouse); // adding last path to paths array
         // as it was checked earlier with if condition that we are drawing so we don't need that
-        // console.log(this.paths.length);
+        console.log(this.paths.length);
         this.#redraw(); // to draw on canvas
       }
     };
@@ -77,7 +77,7 @@ class SketchPad {
 // To address the issue of the `ontouchend` event not triggering when moving out and back into the canvas we would use 
     // this.canvas.ontouchend = () => { // earlier
     document.ontouchend = () => {
-      this.canvas.onmouseup();
+      document.onmouseup();
     };
 
     this.undoBtn.onclick = () => {
