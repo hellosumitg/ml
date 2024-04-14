@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- For allowing people to use special character or emojis in their name we'll use-->
+    <meta charset="UTF-8" />
+    <!-- Below scaling the maximum screen size for the content to reach only 90% and making that the user cannot able to zoom in or zoom out this page -->
+    <meta
+      name="viewport"
+      content="width=device-width, maximum-scale=0.9, user-scalable=0"
+    />
+    <title>Data Creator Drawing App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="content">
+      <h1>Data Creator</h1>
+      <div>
+        <input id="student" type="text" placeholder="type your name" />
+        <span id="instructions"></span>
+        <button id="advanceBtn" onclick="start()">START</button>
+      </div>
+      <br />
+      <div id="sketchPadContainer" style="visibility: hidden"></div>
+    </div>
+
+    <script src="js/draw.js"></script>
+    <script src="js/sketchPad.js"></script>
+
+    <script>
+      let index = 0;
+      const labels = [
+        'car',
+        'fish',
+        'house',
+        'tree',
+        'bicycle',
+        'guitar',
+        'pencil',
+        'clock',
+      ];
+
+      const data = {
+        student: null, // by default
+        session: new Date().getTime(), // unique identifier for this session in-terms of milliseconds precision
+        drawings: {}, // object to store all the paths that people are drawing for each of the different drawings we ask them to do
+      };
+
+      const sketchPad = new SketchPad(sketchPadContainer); //instantiating
+
+      function start() {
+        if (student.value == '') {
+          // if empty
+          alert('Please type your name first!');
+          return;
+        }
+        data.student = student.value; // taken from the input field
+        student.style.display = 'none'; // making input field disappear like this
+        sketchPadContainer.style.visibility = 'visible'; // making the `sketchPad` appear like this
+
+        const label = labels[index];
+        instructions.innerHTML = 'Please draw a ' + label; // writing in the `span` element
+        advanceBtn.innerHTML = 'NEXT'; // changing the `START` button to `NEXT`
+        advanceBtn.onclick = next; // changing the onclick method from `start()` to `next()`
+      }
+
+      function next() {
+        if (sketchPad.paths.length == 0) {
+          // if nothing drawn and clicked next button
+          alert('Draw something first!');
+          return;
+        }
+
+        const label = labels[index];
+        data.drawings[label] = sketchPad.paths; // storing the `drawings` object in the `data` object
+        sketchPad.reset(); // function to reset itself to empty the paths and re-draw everything
+
+        index++;
+
+        if (index < labels.length) {
+          const nextLabel = labels[index];
+          instructions.innerHTML = 'Please draw a ' + nextLabel; // writing in the `span` element
+        } else {
+          // if done with all the labels
+          sketchPadContainer.style.visibility = 'hidden';
+          instructions.innerHTML = 'Thank you!'; // changing previous instruction of span element to `Please draw...` to `Thank...` message
+          advanceBtn.innerHTML = 'SAVE'; // changing the `NEXT` button to `SAVE` button to store all the paths we have drawn locally
+          advanceBtn.onclick = save; // changing the onclick method from `next()` to `save()`
+        }
+
+        function save() {
+          advanceBtn.style.display = 'none'; // completely hiding the button
+          instructions.innerHTML =
+            'Take your downloaded file and place it alongside the others in the dataset!';
+
+          // To create and download the file from the browser we would create an HTML `<a>` (anchor) element
+          const element = document.createElement('a');
+          element.setAttribute(
+            'href',
+            'data:text/plain;charset=utf-8,' +
+              encodeURIComponent(JSON.stringify(data)) // so the data that we are collecting (such as the paths that people are drawing) are going to be saved as a `JSON` string in a file
+          );
+
+          const fileName = data.session + '.json'; // giving filename using the `session` attribute of the `data` object (i.e. a unique name that we generated from the timestamp)
+
+          element.setAttribute('download', fileName); // setting the attribute to `download` of the `<a>` (i.e. anchor) element with specific `fileName`
+
+          element.style.display = 'none'; // making the element invisible
+          document.body.appendChild(element); // adding the element to the body of our HTML document
+          element.click(); // triggering download to happen after click
+          document.body.removeChild(element); // removing the element after the download happened
+        }
+      }
+    </script>
+  </body>
+</html>
